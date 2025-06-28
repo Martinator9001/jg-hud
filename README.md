@@ -251,7 +251,7 @@ npm run build
 
 | Platform | Purpose | Link |
 |----------|---------|------|
-| 💬 **Discord** | Community Support | [Join Server](https://discord.gg/yourserver) |
+| 💬 **Discord** | Community Support | [Join Server](https://discord.gg/yurZwyAQ) |
 | 🐛 **GitHub Issues** | Bug Reports & Features | [Report Issue](https://github.com/JG-Scripts/jg-hud/issues) |
 | 📚 **Documentation** | Guides & Tutorials | [Read Wiki](https://github.com/JG-Scripts/jg-hud/wiki) |
 
