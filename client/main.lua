@@ -12,7 +12,6 @@ local cache = {
 
 local exports_cache = {
     fuel = nil,
-    seatbelt = exports['core-hud']
 }
 
 for _, res in pairs({ 'LegacyFuel', 'ps-fuel', 'cdn-fuel' }) do
@@ -178,7 +177,7 @@ local function updateVehicleHUD(vehicle)
         vehicleName = GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)),
         rpm = rpmValue,
         gear = gearDisplay,
-        seatbeltOn = exports_cache.seatbelt and exports_cache.seatbelt:hasSeatbelt() or false,
+        seatbeltOn = hasSeatbelt(),
         leftTurnSignal = GetVehicleIndicatorLights(vehicle) & 1 > 0,
         rightTurnSignal = GetVehicleIndicatorLights(vehicle) & 2 > 0,
         hazardLights = GetVehicleIndicatorLights(vehicle) == 3,
