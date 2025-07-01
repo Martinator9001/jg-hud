@@ -74,9 +74,10 @@ lib.addKeybind({
     end
 })
 
-exports('hasSeatbelt', function()
+function hasSeatbelt()
     return seatbeltIsOn
-end)
+end
+exports('hasSeatbelt', hasSeatbelt)
 
 
 lib.onCache('vehicle', function(veh)
