@@ -11,9 +11,16 @@ local cache = {
 }
 
 local exports_cache = {
-    fuel = exports['LegacyFuel'] or exports['ps-fuel'] or exports['cdn-fuel'],
+    fuel = nil,
     seatbelt = exports['core-hud']
 }
+
+for _, res in pairs({ 'LegacyFuel', 'ps-fuel', 'cdn-fuel' }) do
+    if GetResourceState(res) == "started" and exports[res] and exports[res].GetFuel then
+        exports_cache.fuel = exports[res]
+        break
+    end
+end
 
 AddEventHandler("pma-voice:radioActive", function(radioTalking)
     cache.usingRadio = radioTalking
