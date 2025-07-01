@@ -84,6 +84,9 @@ end
 
 local function updatePlayerInfo()
     local ped = PlayerPedId()
+
+    cache.PlayerData = getPlayerData()
+
     local meta = cache.PlayerData.metadata or {}
 
     SendNUIMessage({

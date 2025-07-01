@@ -20,10 +20,29 @@ RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     isLoggedIn = true
 end)
 
-RegisterNetEvent('QBCore:Client:OnPlayerUnload', function() isLoggedIn = false end)
-RegisterNetEvent('QBCore:Client:OnJobUpdate', function(job) PlayerData.job = job end)
-RegisterNetEvent('QBCore:Client:OnGangUpdate', function(gang) PlayerData.gang = gang end)
-RegisterNetEvent('QBCore:Player:SetPlayerData', function(data) PlayerData = data end)
+RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+    PlayerData = {}
+end)
+
+RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
+    PlayerData.job = JobInfo
+end)
+
+RegisterNetEvent('QBCore:Client:OnGangUpdate', function(GangInfo)
+    PlayerData.gang = GangInfo
+end)
+
+RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
+    PlayerData = val
+end)
+
+RegisterNetEvent('hud:client:UpdateNeeds', function(newHunger, newThirst)
+    local meta = PlayerData.metadata or {}
+    meta.hunger = newHunger
+    meta.thirst = newThirst
+
+    PlayerData.metadata = meta
+end)
 
 _G.GetPlayerData = QBCore.Functions.GetPlayerData
 _G.IsPlayerLoaded = function() return LocalPlayer.state.isLoggedIn end
