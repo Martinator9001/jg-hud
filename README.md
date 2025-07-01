@@ -179,41 +179,6 @@ Enable in `client/main.lua`:
 local debugMode = true
 ```
 
-</details>
-
-## 🤝 Contributing
-
-<div align="center">
-
-**We welcome contributions from the community!**
-
-</div>
-
-<details>
-<summary><strong>🛠️ Development Guide</strong></summary>
-
-### Quick Start
-1. 🍴 Fork the repository
-2. 🌿 Create a feature branch
-3. ✏️ Make your changes
-4. 🧪 Test thoroughly
-5. 📤 Submit a pull request
-
-### Development Setup
-```bash
-# Install dependencies
-cd vue-hud
-npm install
-
-# Development mode with hot reload
-npm run dev
-
-# Build for production
-npm run build
-```
-
-</details>
-
 ---
 
 ## 📄 License
