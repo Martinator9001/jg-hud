@@ -207,14 +207,22 @@ CreateThread(function()
     while true do
         if cache.isLoggedIn then
             local ped = PlayerPedId()
-            updatePlayerInfo()
-
             local vehicle, isDriving = updateVehicleStatus(ped)
 
             if cache.inVehicle then
                 updateVehicleHUD(vehicle)
             end
         end
-        Wait(cache.inVehicle and 100 or 1000)
+        Wait(100)
+    end
+end)
+
+CreateThread(function()
+    while true do
+        if cache.isLoggedIn then
+            local ped = PlayerPedId()
+            updatePlayerInfo()
+        end
+        Wait(1000)
     end
 end)
