@@ -248,8 +248,8 @@ end
 
 local function updateDashboard(vehicle)
     local vdata = getVehicleData(vehicle)
-    local engineHealth = 0-- GetVehicleEngineHealth(vehicle)
-    local _, lightsOn, highBeamsOn = 0-- GetVehicleLightsState(vehicle)
+    local engineHealth = GetVehicleEngineHealth(vehicle)
+    local _, lightsOn, highBeamsOn = GetVehicleLightsState(vehicle)
     local indicatorLights = GetVehicleIndicatorLights(vehicle)
     SendNUIMessage({
         type = 'updateVehicle',
