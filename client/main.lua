@@ -1,3 +1,10 @@
+--HUD update periods (frequencies) in msec, better if slightly different so they don't overlap and cause minor lag spikes. It turns out that threads are relatively synced :D
+local PlayerInfoUpdatePeriod = 1000 -- default - 1000; Updates player status - health, hunger (high cpu)
+local GPSUpdatePeriod = 440 -- high - 110, medium - 220, low - 440, default - 440 Updates the street you're on (the left side of the hud) (high cpu)
+local VehicleSpeedometerUpdatePeriod = 100 -- high value - 100, medium - 230, low - 460, default - 100; Updates rpm and gears (high cpu, but needs to be updated often)
+local VehicleSpeedUpdatePeriod = 32 -- perfect: 16 really high - 32, high - 45, medium - 85, default - 100; Updates speed (low cpu, but needs to be updated really often) 
+local DashboardUpdatePeriod = 500 -- high - 500, default - 1000; Updates everything on the dashboard below the speedometer and the engine health
+
 local cache = {
     inVehicle = false,
     totalDistance = 0,
@@ -170,7 +177,7 @@ local function updateVehicleHUD(vehicle)
     local speedMph = math.ceil(vdata.speed * 0.621371)
     local rpmValue = vdata.rpm * 10000
     local gearDisplay = getGearDisplay(vdata.gear, vdata.engine)
-
+    local indicatorLights = GetVehicleIndicatorLights(vehicle)
     SendNUIMessage({
         type = 'updateVehicle',
         speed = speedMph,
@@ -181,9 +188,9 @@ local function updateVehicleHUD(vehicle)
         rpm = rpmValue,
         gear = gearDisplay,
         seatbeltOn = hasSeatbelt(),
-        leftTurnSignal = GetVehicleIndicatorLights(vehicle) & 1 > 0,
-        rightTurnSignal = GetVehicleIndicatorLights(vehicle) & 2 > 0,
-        hazardLights = GetVehicleIndicatorLights(vehicle) == 3,
+        leftTurnSignal = indicatorLights & 1 > 0,
+        rightTurnSignal = indicatorLights & 2 > 0,
+        hazardLights = indicatorLights == 3,
         headlights = lightsOn and highBeamsOn,
         shortLights = lightsOn,
         highLights = highBeamsOn,
@@ -201,6 +208,65 @@ local function updateVehicleHUD(vehicle)
     })
 end
 
+local function updateGPS(vehicle)
+    local coords = GetEntityCoords(PlayerPedId())
+    local location = getLocation()
+
+    SendNUIMessage({
+        type = 'updateLocation',
+        street = location.street or 'Ubicación desconocida',
+        zone = location.area or 'Zona desconocida',
+        coordinates = string.format('%.0f', math.sqrt(coords.x ^ 2 + coords.y ^ 2)),
+        distance = string.format('%.0f°', GetEntityHeading(PlayerPedId()))
+    })
+end
+
+local function updateSpeedometer(vehicle)
+    local vdata = getVehicleData(vehicle)
+    local rpmValue = vdata.rpm * 10000
+    local gearDisplay = getGearDisplay(vdata.gear, vdata.engine)
+    SendNUIMessage({
+        type = 'updateVehicle',
+        fuel = vdata.fuel,
+        odometer = math.ceil(cache.totalDistance),
+        vehicleName = GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)),
+        rpm = rpmValue,
+        gear = gearDisplay,
+    })
+end
+
+local function updateSpeed(vehicle)
+    local speed = GetEntitySpeed(vehicle)
+    updateOdometer(vehicle, speed)
+
+    local speedMph = math.round(speed * 2.236936) --use math.round for very slightly more accurate and smoother changing
+        SendNUIMessage({
+        type = 'updateVehicle',
+        speed = speedMph,
+    })
+end
+
+local function updateDashboard(vehicle)
+    local vdata = getVehicleData(vehicle)
+    local engineHealth = 0-- GetVehicleEngineHealth(vehicle)
+    local _, lightsOn, highBeamsOn = 0-- GetVehicleLightsState(vehicle)
+    local indicatorLights = GetVehicleIndicatorLights(vehicle)
+    SendNUIMessage({
+        type = 'updateVehicle',
+        engineHealth = math.ceil((engineHealth / 1000) * 100),
+        seatbeltOn = hasSeatbelt(),
+        leftTurnSignal = indicatorLights & 1 > 0,
+        rightTurnSignal = indicatorLights & 2 > 0,
+        hazardLights = indicatorLights == 3,
+        headlights = lightsOn and highBeamsOn,
+        shortLights = lightsOn,
+        highLights = highBeamsOn,
+        vehicleBroken = engineHealth < 300 or not vdata.engine,
+        handbrake = GetVehicleHandbrake(vehicle),
+        engineWarning = engineHealth < 500 or not vdata.engine
+    })
+end
+
 CreateThread(waitForPlayerLoad)
 
 CreateThread(function()
@@ -208,13 +274,63 @@ CreateThread(function()
         if cache.isLoggedIn then
             local ped = PlayerPedId()
             updatePlayerInfo()
+        end
+        Wait(PlayerInfoUpdatePeriod)
+    end
+end)
 
+CreateThread(function()
+    while true do
+        if cache.isLoggedIn then
+            local ped = PlayerPedId()
             local vehicle, isDriving = updateVehicleStatus(ped)
 
             if cache.inVehicle then
-                updateVehicleHUD(vehicle)
+                updateGPS(vehicle)
             end
         end
-        Wait(cache.inVehicle and 100 or 1000)
+        Wait(GPSUpdatePeriod)
+    end
+end)
+
+CreateThread(function()
+    while true do
+        if cache.isLoggedIn then
+            local ped = PlayerPedId()
+            local vehicle, isDriving = updateVehicleStatus(ped)
+
+            if cache.inVehicle then
+                updateSpeedometer(vehicle)
+            end
+        end
+        Wait(VehicleSpeedometerUpdatePeriod)
+    end
+end)
+
+CreateThread(function()
+    while true do
+        if cache.isLoggedIn then
+            local ped = PlayerPedId()
+            local vehicle, isDriving = updateVehicleStatus(ped)
+
+            if cache.inVehicle then
+                updateSpeed(vehicle)
+            end
+        end
+        Wait(VehicleSpeedUpdatePeriod)
+    end
+end)
+
+CreateThread(function()
+    while true do
+        if cache.isLoggedIn then
+            local ped = PlayerPedId()
+            local vehicle, isDriving = updateVehicleStatus(ped)
+
+            if cache.inVehicle then
+                updateDashboard(vehicle)
+            end
+        end
+        Wait(DashboardUpdatePeriod)
     end
 end)
